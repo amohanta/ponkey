@@ -1,2 +1,5 @@
 *.[oa]
 *~
+*.sh
+#ignore my utilities
+PUtils/
