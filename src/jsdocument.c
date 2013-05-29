@@ -46,6 +46,8 @@
 #include "jsstddef.h"
 #include "jsstr.h"
 
+#include "jselement.h"
+
 #define JSLOG "/tmp/js_function.log"
 
 enum document_property_id {
@@ -489,14 +491,12 @@ str = js_ValueToString(cx, argv[0]);
        if(fOut){
 	       fprintf(fOut, "OBJECT_CREATED: %s\n", bytes);
        fclose(fOut);
-			         }
+       }
 return JS_TRUE;
 }
 
 
-
 //Very very dumb setAttribute skeleton
-
 static JSBool element_setAttribute(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval){
 FILE* fOut;
 const char* attr_bytes;
@@ -526,7 +526,7 @@ name_bytes = JS_GetStringBytes(str);
        if(fOut){
 	       fprintf(fOut, "%s.setAttribute: %s to %s\n", name_bytes,attr_bytes, val_bytes);
        fclose(fOut);
-			         }
+       }
 return JS_TRUE;
 }
 
@@ -762,19 +762,6 @@ static JSFunctionSpec document_static_methods[] = {
 
 //P #define INITPROPERTIES
 //P to fill
-/* stop this nonsense
-static JSBool
-initdocumentproperties(JSContext *cx, JSObject *obj)
-{
-	printf("intializing properties for document\n");
-//create jsval type type value
-	char *str="test";
-	jsval id=OBJECT_TO_JSVAL(obj);
-	jsval vp=STRING_TO_JSVAL(str);
-	document_setProperty(cx, obj, id, &vp);
-	return JS_TRUE;
-}
-*/
 
 enum jselement_property_id {
 	ELEMENT_BASEURI,
@@ -790,30 +777,27 @@ static JSPropertySpec element_properties[] = {
 	{ "baseURI", 		ELEMENT_BASEURI , 		JSPROP_ENUMERATE },
 	{ "childElementCount", 	ELEMENT_CHILDELEMENTCOUNT , 	JSPROP_ENUMERATE },
 	{ "clientHeight", 	ELEMENT_CLIENTHEIGHT , 		JSPROP_ENUMERATE },
-	{ "childElementCount", 	ELEMENT_CLIENTTOP , 		JSPROP_ENUMERATE },
-	{ "childElementCount", 	ELEMENT_NAME , 			JSPROP_ENUMERATE },
 	{ NULL, 0, 0}
 };
 
 //P just to work 
-static JSBool document_getelementbyid(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval){ //
-/*//P To be implemented later
-	GET ID OF THE OBJECT from argv[0]
-	GET the element with the id  till then
-	jsid = JSVAL_TO_JSID(argv[0])
-*/
-
-  JSObject *elementObj;
-
-  if(!(elementObj = JS_DefineObject(cx, obj, "documentElement", NULL, NULL, 0))) {
-	return NULL;
-  }
+static JSBool document_getelementbyid(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval) 
+{
+	jsid id;
+	JSString *str;
+	JS_ValueToId(cx, argv[0], &id);
+	printf("I got this id: %d\n", JSID_TO_INT(id)); //now what can i do with this id....
+	str = js_NumberToString(cx, (jsdouble) JSID_TO_INT(id));
+	printf("The string with this id is: %s\n", JS_GetStringBytes(str));
+	return JS_TRUE;
+/*  }
 
   if(!JS_DefineProperties(cx, elementObj, element_properties)) {
 	return JS_FALSE;
   }
 	*rval= OBJECT_TO_JSVAL(elementObj);
 	return JS_TRUE;
+///P End */
 }
 
 JSObject *
@@ -854,7 +838,8 @@ js_InitDocumentClass(JSContext *cx, JSObject *obj) {
   if(!JS_DefineProperty(cx, Document, "referer", JS_GetEmptyStringValue(cx), NULL, NULL, 0)){
               return JS_FALSE;
   }
-
+  js_InitElementClass(cx, Document);
+/*
   if(!(elementObj = JS_DefineObject(cx, Document, "documentElement", NULL, NULL, 0))) {
 	return NULL;
   }
@@ -862,6 +847,7 @@ js_InitDocumentClass(JSContext *cx, JSObject *obj) {
   if(!JS_DefineProperties(cx, elementObj, element_properties)) {
 	return JS_FALSE;
   }
+*/
 /*
   JSD *jsDoc;
   jsDoc = JS_malloc(cx, sizeof *jsDoc);
