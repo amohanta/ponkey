@@ -1232,6 +1232,7 @@ out:
     cx->fp = fp;
 
 out2:
+
     /* Pop everything we may have allocated off the stack. */
     JS_ARENA_RELEASE(&cx->stackPool, mark);
 
@@ -1244,13 +1245,17 @@ out2:
      * return value, but only if this is an external (compiled from script
      * source) call that has stack budget for the generating pc.
      */
+
     if (fp->script && !(flags & JSINVOKE_INTERNAL))
         vp[-(intN)fp->script->depth] = (jsval)fp->pc;
+
     return ok;
 
 bad:
     js_ReportIsNotFunction(cx, vp, flags & JSINVOKE_CONSTRUCT);
     ok = JS_FALSE;
+printf("Warning: function is not present. Skipping..\n");
+ok=JS_TRUE;
     goto out2;
 }
 
@@ -1282,6 +1287,7 @@ js_InternalInvoke(JSContext *cx, JSObject *obj, jsval fval, uintN flags,
         PUSH(argv[i]);
     SAVE_SP(fp);
     ok = js_Invoke(cx, argc, flags | JSINVOKE_INTERNAL);
+
     if (ok) {
         RESTORE_SP(fp);
 
@@ -3128,6 +3134,7 @@ js_Interpret(JSContext *cx, jsbytecode *pc, jsval *result)
             /* Now we have an object with a constructor method; call it. */
             vp[1] = OBJECT_TO_JSVAL(obj);
             ok = js_Invoke(cx, argc, JSINVOKE_CONSTRUCT);
+
             RESTORE_SP(fp);
             LOAD_BRANCH_CALLBACK(cx);
             LOAD_INTERRUPT_HANDLER(rt);
@@ -3211,8 +3218,9 @@ js_Interpret(JSContext *cx, jsbytecode *pc, jsval *result)
             ok = js_FindProperty(cx, id, &obj, &obj2, &prop);
             if (!ok)
                 goto out;
-            if (!prop)
+            if (!prop) {
                 goto atom_not_defined;
+	    }
 
             OBJ_DROP_PROPERTY(cx, obj2, prop);
             lval = OBJECT_TO_JSVAL(obj);
@@ -3657,6 +3665,11 @@ js_Interpret(JSContext *cx, jsbytecode *pc, jsval *result)
                     if (op2 != JSOP_GROUP)
                         break;
                 }
+printf("Warning: Object not found. Skipping..\n");
+rval=STRING_TO_JSVAL("skipped");
+PUSH_OPND(rval);
+break;
+
                 goto atom_not_defined;
             }
 
@@ -5556,9 +5569,11 @@ out2:
 atom_not_defined:
     {
         const char *printable = js_AtomToPrintableString(cx, atom);
-        if (printable)
-            js_ReportIsNotDefined(cx, printable);
+//printf("Warning: %s is not defined Skipping\n", printable);
+ //       if (printable)
+//            js_ReportIsNotDefined(cx, printable);
         ok = JS_FALSE;
+//ok=JS_TRUE;
         goto out;
     }
 }
