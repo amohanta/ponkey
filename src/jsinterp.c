@@ -2185,8 +2185,13 @@ js_Interpret(JSContext *cx, jsbytecode *pc, jsval *result)
                                          JSMSG_IN_NOT_OBJECT,
                                          JS_GetStringBytes(str));
                 }
-                ok = JS_FALSE;
-                goto out;
+//P
+		printf("here problem");
+		rval=STRING_TO_JSVAL("Skipping");
+//P                ok = JS_FALSE;
+		ok=JS_TRUE;
+		break;
+//P                goto out;
             }
             obj = JSVAL_TO_OBJECT(rval);
             FETCH_ELEMENT_ID(-2, id);

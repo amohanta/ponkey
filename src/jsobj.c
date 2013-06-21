@@ -4206,11 +4206,17 @@ js_ValueToNonNullObject(JSContext *cx, jsval v)
     if (!js_ValueToObject(cx, v, &obj))
         return NULL;
     if (!obj) {
-        str = js_DecompileValueGenerator(cx, JSDVG_SEARCH_STACK, v, NULL);
-        if (str) {
-            JS_ReportErrorNumber(cx, js_GetErrorMessage, NULL,
-                                 JSMSG_NO_PROPERTIES, JS_GetStringBytes(str));
-        }
+//        str = js_DecompileValueGenerator(cx, JSDVG_SEARCH_STACK, v, NULL);
+//        if (str) {
+//            JS_ReportErrorNumber(cx, js_GetErrorMessage, NULL,
+//                                 JSMSG_NO_PROPERTIES, JS_GetStringBytes(str));
+//        }
+//P
+	printf("problem no obj is present\n");
+	jsval tmp = STRING_TO_JSVAL("skip");
+	obj=JSVAL_TO_OBJECT(tmp);
+	js_ValueToObject(cx, tmp, &obj);
+//P
     }
     return obj;
 }
